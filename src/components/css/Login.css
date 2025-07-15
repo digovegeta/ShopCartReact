@@ -1,0 +1,15 @@
+#container{
+    display: grid;
+    justify-content: center;
+    label{
+        text-align: left;
+    }
+    input{
+        width: 200px;
+        height: 20px;
+    }
+    .error{
+        color: red;
+        font-size: small;
+    }
+}
