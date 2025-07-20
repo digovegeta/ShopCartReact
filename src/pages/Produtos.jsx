@@ -36,6 +36,7 @@ export default function Produtos() {
     } else {
       setCarrinho([...carrinho, { id: produto.id, produto, qtd: 1 }]);
     }
+    console.log(carrinho);
   };
 
   const removerDoCarrinho = (produtoId) => {
