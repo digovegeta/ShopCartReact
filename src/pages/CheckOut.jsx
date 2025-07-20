@@ -1,102 +1,103 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import Fetch from '../utis/Fetch';
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router-dom';
 import ReduzirTexto from '../utis/ReduzirTexto';
 
-export default function CheckOut(){
+export default function CheckOut() {
     const navigate = useNavigate();
     const location = useLocation();
-    const [carrinho, setCarrinho] = useState(location.state.carrinho)
-    const [data, setData] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [total, setTotal] = useState(0)
-    let valor = 0;
-    useEffect(() => {
-        async function fetchData() {
-            const result = await Fetch('https://fakestoreapi.com/products');
-            setData(result);
-            setLoading(false);
-            valor = 0;
-            result.map(e => ( carrinho.filter(c => {if(e.id == c.id) addTotal(parseFloat(e.price) * parseInt(c.qtd))})))
-        }
-        fetchData();
-    }, []);
+    const [usuario, setUser] = useState(localStorage.getItem("usuarioLogado"));
+    const [chaveCarrinho, setChave] = useState(`carrinho-${usuario}`);
+    const [carrinho, setCarrinho] = useState(JSON.parse(localStorage.getItem(chaveCarrinho)));
+    const [total, setTotal] = useState(0);
 
-    if (loading) return <p>Carregando...</p>;
-    function addTotal(valor2){
-        console.log(valor2);
-        valor += valor2;
-        setTotal(valor)
+  useEffect(() => {
+    const carrinhoSalvo = localStorage.getItem(chaveCarrinho);
+    if (carrinhoSalvo) {
+      setCarrinho(JSON.parse(carrinhoSalvo));
     }
-    function add(id){
-        const temp = carrinho;
-        const index = temp.findIndex((e) =>  isID(e, id));
-        if(index != -1){
-            temp[index].qtd += 1;
-        }else{
-            let obj = {id, qtd: 1};
-            temp.push(obj);
-        }
-        console.log(temp);
-        setCarrinho(temp);
-        data.map(e => ( carrinho.filter(c => {if(e.id == c.id) addTotal(parseFloat(e.price) * parseInt(c.qtd))})))
-    }
-    function isID(e, id) {
-        return e.id === id;
-    }
-    function removed(id){
-        const temp = carrinho;
-        const index = temp.findIndex((e) =>  isID(e, id));
-        if(index != -1){
-            if(temp[index].qtd > 1){
-                temp[index].qtd -= 1;
-            }else{
-                const i = temp.indexOf(temp[index]);
-                if (index > -1) {
-                    temp.splice(i, 1);
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem(chaveCarrinho, JSON.stringify(carrinho));
+
+    const novoTotal = carrinho.reduce((acc, item) => {
+      return acc + (item.price * item.qtd);
+    }, 0);
+    setTotal(novoTotal);
+  }, [carrinho]);
+
+
+    useEffect(() => {
+        // Atualiza total sempre que carrinho muda
+        const novoTotal = carrinho.reduce((acc, item) => {
+            return acc + (item.produto.price * item.qtd);
+        }, 0);
+        setTotal(novoTotal);
+    }, [carrinho]);
+
+    const add = (id) => {
+        setCarrinho(prev =>
+            prev.map(item =>
+                item.id === id ? { ...item, qtd: item.qtd + 1 } : item
+            )
+        );
+    };
+    
+    const removed = (id) => {
+        setCarrinho(prev =>
+        prev
+            .map(item => {
+                if (item.id === id) {
+                    if (item.qtd <= 1) return null; 
+                    return { ...item, qtd: item.qtd - 1 }; 
                 }
-            }
-        }
-        console.log(valor);
-        setCarrinho(temp);
-        data.map(e => ( carrinho.filter(c => {if(e.id == c.id) addTotal(parseFloat(e.price) * parseInt(c.qtd))})))
-        if(carrinho.length == 0){
-            setTotal(0);
-        }
-    }
-    return(
+                return item;
+            })
+            .filter(item => item !== null)
+        );
+    };
+
+    return (
         <>
-            <Link to={'/produtos'} state={ {carrinho} }><button class="voltar-detalhes btn"><i class="bi bi-arrow-left-square"></i></button></Link>
-            <div class="div">
-            <table id='table-checkout'>
-                <thead>
-                    <th class="td-id-th">item</th>
-                    <th class="td-title-th">nome</th>
-                    <th class="td-price-th">valor</th>
-                    <th class="td-qtd-th">quantidade</th>
-                    <th class="td-total-th">total</th>
-                </thead>
-            {data.map(data => (
-                carrinho.map(carrinho => (
-                    data.id == carrinho.id?                 
+            <Link to={'/produtos'} state={{ carrinho }}>
+                <button className="voltar-detalhes btn">
+                    <i className="bi bi-arrow-left-square"></i>
+                </button>
+            </Link>
+            <div className="div">
+                <table id='table-checkout'>
+                    <thead>
+                        <tr>
+                            <th className="td-id-th">Item</th>
+                            <th className="td-title-th">Nome</th>
+                            <th className="td-price-th">Valor</th>
+                            <th className="td-qtd-th">Quantidade</th>
+                            <th className="td-total-th">Total</th>
+                        </tr>
+                    </thead>
                     <tbody>
-                    <td class="td-id">{carrinho.id}</td>
-                    <td class="td-title">{ReduzirTexto(data.title,70)}</td>
-                    <td class="td-price">R$ {data.price.toFixed(2)}</td>
-                    <td class="td-qtd">
-                        <button class="btn" onClick={() => removed(data.id)}><i class="bi bi-dash"></i></button>
-                        {carrinho.qtd}
-                        <button class="btn" onClick={() => add(data.id)}><i class="bi bi-plus-lg"></i></button>
-                    </td>                                
-                    <td class="td-total">R$ {(parseFloat(data.price) * parseInt(carrinho.qtd)).toFixed(2)}</td>
-                </tbody>: ""))
-            ))}
-            </table>
-        </div>
-        <div id="total-checkout">
-            <h4>Total R$ {total.toFixed(2)}</h4>
-        </div>
+                        {carrinho.map(item => (
+                            <tr key={item.id}>
+                                <td className="td-id" style={{ width: '150px', height: '150px', overflow: 'hidden' }}>
+                                    <img src={item.produto.image} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain'}}/>
+                                </td>
+                                <td className="td-title">{ReduzirTexto(item.produto.title, 70)}</td>
+                                <td className="td-price">R$ {item.produto.price.toFixed(2)}</td>
+                                <td className="td-qtd">
+                                    <button className="btn" onClick={() => removed(item.id)}><i className="bi bi-dash"></i></button>
+                                    {item.qtd}
+                                    <button className="btn" onClick={() => add(item.id)}><i className="bi bi-plus-lg"></i></button>
+                                </td>
+                                <td className="td-total">R$ {(item.produto.price * item.qtd).toFixed(2)}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+            <div id="total-checkout">
+                <h4>Total R$ {total.toFixed(2)}</h4>
+            </div>
         </>
-    )
+    );
 }
