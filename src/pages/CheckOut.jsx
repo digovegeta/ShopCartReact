@@ -80,7 +80,9 @@ export default function CheckOut() {
                         {carrinho.map(item => (
                             <tr key={item.id}>
                                 <td className="td-id" style={{ width: '150px', height: '150px', overflow: 'hidden' }}>
-                                    <img src={item.produto.image} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain'}}/>
+                                    <Link className="produto" to={`/produtos/${item.produto.id}`} >
+                                        <img src={item.produto.image} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain'}}/>
+                                    </Link>
                                 </td>
                                 <td className="td-title">{ReduzirTexto(item.produto.title, 70)}</td>
                                 <td className="td-price">R$ {item.produto.price.toFixed(2)}</td>

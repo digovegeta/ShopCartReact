@@ -2,9 +2,12 @@
     padding: 0px;
     margin: 0px;
 }
+.title{
+    padding-bottom: 25px;
+}
 .nav-produtos{
     display: flex;
-    justify-content: right;
+    justify-content: space-between;
     #cart-check{
         border-style: none;
         background-color: transparent;
@@ -12,6 +15,13 @@
     }
     h1{
         font-size: xx-large;
+    }
+    #categoria{
+        height: 20px;
+    }
+    .divCategoria{
+        display: flex;
+        align-items: end;
     }
 }
 #container{
